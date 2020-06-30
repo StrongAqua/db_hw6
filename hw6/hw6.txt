@@ -1,0 +1,22 @@
+Установить MongoDB и повторить запросы из методички.
+
+Все названия ресторанов на "М":
+db.docs.find({name: {$regex:"M"}});
+
+Ограничили вывод тремя ресторанами:
+db.docs.find().limit(3);
+
+Вывели все Mcdonald'S:
+db.docs.find({name: "Mcdonald'S"});
+
+Вывели все, кроме Mcdonald'S:
+db.docs.find({name: {$ne:"Mcdonald'S"}});
+
+Выводим только по двум названиям ресторанов:
+db.docs.find({$or : [{name: "Sal'S Deli"}, {name: "Carvel Ice Cream"}]});
+
+Переименовываем определенный ресторан:
+db.docs.update({"restaurant_id" : "41121595", "name" : "Carvel Ice Cream"},{$set: {"name" : "Fruits"}});
+
+Ищем все рестораны с классом "А":
+db.docs.find({ "grades.grade" : "A" });
