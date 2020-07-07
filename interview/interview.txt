@@ -1,0 +1,52 @@
+// ----------------------------------------------------------------------
+Задача 1.
+
+Запрос, который выводит информацию:
+- id пользователя;
+- имя;
+- лайков получено;
+- лайков поставлено;
+- взаимные лайки.
+
+ SELECT users.id as id, users.name as name, 
+ (SELECT COUNT(*) FROM likes_user WHERE users.id = likes_user.user_id_2) AS received_likes, 
+ (SELECT COUNT(*) FROM likes_user WHERE users.id = likes_user.user_id_1) as sent_likes,
+ (SELECT COUNT(*) FROM likes_user L1 INNER JOIN likes_user L2 ON L1.user_id_1 = L2.user_id_2 
+	AND L2.user_id_1 = L1.user_id_2 WHERE L1.user_id_1 = users.id) AS cross_likes
+	FROM users
+ORDER BY users.id;
+
+// ----------------------------------------------------------------------
+Задача 2.
+
+Список пользователей, которые поставили лайк пользователям A = 4 и B = 3, но при этом не поставили лайк пользователю C = 2.
+
+SELECT Y.user_id_1 AS id, U.name AS name FROM
+(
+  SELECT user_id_1 FROM
+  (SELECT user_id_1, COUNT(*) AS cnt FROM likes_user WHERE user_id_2 = 4 OR user_id_2 = 3 GROUP BY user_id_1) C
+  WHERE c.cnt = 2
+) Y
+INNER JOIN users AS U ON U.id = Y.user_id_1
+WHERE Y.user_id_1 NOT IN
+(SELECT user_id_1 FROM likes_user WHERE user_id_2 = 2 GROUP BY user_id_1);
+
+// ----------------------------------------------------------------------
+Задача 3.
+
+Для защиты от двойного лайка создан уникальный индекс для пары user_id/photo_id - uq_likes_photo_user_id_photo_id_idx
+Для проверки можно дважды попытаться поставить лайк:
+INSERT INTO likes_photo (user_id, photo_id) VALUES (4, 1);
+INSERT INTO likes_photo (user_id, photo_id) VALUES (4, 1); - ошибка
+Аналоигчный индекс создан для комментариев - uq_likes_photo_comments_user_id_photo_comments_id_idx
+
+Для отзыва лайка:
+DELETE FROM likes_photo WHERE user_id=4 and photo_id=1;
+
+Получить количество лайков для сущности:
+SELECT count(*) FROM likes_photo WHERE photo_id = 1;
+
+Список лайкнувших сущность:
+SELECT LP.photo_id as photo_id, U.id as user_id, U.name as user_name FROM likes_photo AS LP
+INNER JOIN users as U ON U.id = LP.user_id
+WHERE LP.photo_id = 1;

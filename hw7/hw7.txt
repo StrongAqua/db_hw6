@@ -1,0 +1,134 @@
+----------------------------
+1. Создать нового пользователя и задать ему права доступа на базу данных «Страны и города мира».
+
+
+mysql> create user 'belash'@'localhost' IDENTIFIED BY '12345'
+    -> ;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> GRANT ALL PRIVILEGES ON geodata TO 'belash'@'localhost';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> quit
+Bye
+
+----
+Чтобы товарищ появился в привилегиях, под ним нужно зайти:
+----
+Ilyas-MacBook-Pro:~ aprirez$ mysql -u belash -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 14
+Server version: 8.0.20 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use geodata;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> show tables;
++-------------------+
+| Tables_in_geodata |
++-------------------+
+| _cities           |
+| _countries        |
+| _regions          |
++-------------------+
+3 rows in set (0.00 sec)
+
+mysql> select * from _cities limit 1;
++----+------------+-----------+-----------+------------------+
+| id | country_id | important | region_id | title            |
++----+------------+-----------+-----------+------------------+
+|  5 |          1 |         0 |   1045244 | Отрадное         |
++----+------------+-----------+-----------+------------------+
+1 row in set (0.00 sec)
+
+mysql> update _cities set important=1 where id=5;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from _cities limit 1;
++----+------------+-----------+-----------+------------------+
+| id | country_id | important | region_id | title            |
++----+------------+-----------+-----------+------------------+
+|  5 |          1 |         1 |   1045244 | Отрадное         |
++----+------------+-----------+-----------+------------------+
+1 row in set (0.00 sec)
+
+mysql> update _cities set important=0 where id=5;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+----
+Видим, что все получилось и пользователь все может делать
+
+----------------------------
+2. Сделать резервную копию базы, удалить базу и пересоздать из бекапа.
+----
+создаем резерв
+----
+Ilyas-MacBook-Pro:~ aprirez$ /usr/local/mysql/bin/mysqldump -u root -p employees > dump1.sql
+Enter password: 
+Ilyas-MacBook-Pro:~ aprirez$ mysql -u root -p
+Enter password:   
+----
+удаляем базу
+----
+mysql> drop database employees;
+Query OK, 7 rows affected (0.10 sec)
+
+----
+проверяем, что ее больше нет
+----
+mysql> show schemas;
++--------------------+
+| Database           |
++--------------------+
+| geodata            |
+| information_schema |
+| lesson2            |
+| mysql              |
+| performance_schema |
+| shop               |
+| sys                |
+| world              |
++--------------------+
+8 rows in set (0.00 sec)
+
+---
+восстанавливаем базу
+----
+Ilyas-MacBook-Pro:~ aprirez$ mysql -u root -p employees <  dump1.sql
+Enter password: 
+----
+проверяет, что все на месте
+----
+mysql> show schemas;
++--------------------+
+| Database           |
++--------------------+
+| employees          |
+| geodata            |
+| information_schema |
+| lesson2            |
+| mysql              |
+| performance_schema |
+| shop               |
+| sys                |
+| world              |
++--------------------+
+9 rows in set (0.01 sec)
+
+
